@@ -81,13 +81,6 @@ def decimate(samples):
     lst = sorted(samples,reverse=True,key=fitness)[:int(params.survival_rate * params.population)]
     return np.array(lst,dtype=np.int_)
 
-def decimate(samples):
-    fits = np.array(list(map(fitness,samples)))
-    fits -= min(fits) - 1
-    fits = fits**params.resilience_factor
-    probs = fits / sum(fits)
-    spare = np.random.rand(params.population) < probs * params.survival_rate * params.population
-    return samples[spare]
 
 def repopulate(old_gen):
     new_gen = [_ for _ in old_gen]
