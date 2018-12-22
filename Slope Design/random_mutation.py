@@ -1,6 +1,9 @@
 '''
 The objective is to design a slope. The fitness of the slope here will be the
 negative of the time taken for an object to slide down it.
+
+I shall assume the object slides like a bead through string as in the entire
+velocity keeps changing direction without energy loss
 '''
 import numpy as np
 import argparse
@@ -12,8 +15,8 @@ from skimage.draw import polygon
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--var',type=float,default=1) # enter normalized value
-parser.add_argument('--population',type=int,default=100)
+parser.add_argument('--var',type=float,default=1e-3) # enter normalized value
+parser.add_argument('--population',type=int,default=1000)
 parser.add_argument('--max_gen',type=int,default=10000)
 parser.add_argument('--frequency',type=int,default=100)
 parser.add_argument('--survival_rate',type=int,default=0.1)
@@ -39,11 +42,28 @@ best_fits = []
 
 
 def fitness(arr): # for a 1d array
+    assert np.isclose( arr[-1],params.height) # safety check
     hs = arr[1:] - arr[:-1]
     if np.any(hs<=0):
         return -np.inf
     grad_inv = params.length / (hs * params.res)
     ts = np.sqrt(2*hs/g * (1+grad_inv**2))
+    return -np.sum(ts)
+
+
+def fitness(arr): # for a 1d array
+    assert np.isclose(arr[-1],params.height) # safety check
+    hs = arr[1:] - arr[:-1]
+    vs = np.sqrt( 2*g*(params.height-arr + 1e-4) )
+    # try:
+    #     assert not np.isnan(vs).any()
+    # except AssertionError:
+    #     print(vs)
+    #     print(vs-np.sort(vs))
+    #     exit()
+    grad_inv = params.length / (hs * params.res)
+    sin_thetas = 1 / ( 1 + grad_inv**2 )
+    ts = ( vs[:-1]-vs[1:] ) / ( g * sin_thetas )
     return -np.sum(ts)
 
 
@@ -120,14 +140,13 @@ pop *= params.height
 pop = np.cumsum(pop,axis=1)
 
 
-
-
 for gNo in range(params.max_gen + 1):
     if gNo % params.frequency == 0:
         fit_max = log_status(gNo,pop)
     survivors = decimate(pop)
     pop = repopulate(survivors)
 
+os.system('python3 img_to_gif.py')
 
 if params.plot:
     import pylab as plt
