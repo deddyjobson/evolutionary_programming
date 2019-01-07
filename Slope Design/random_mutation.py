@@ -62,7 +62,7 @@ def fitness(arr): # for a 1d array
     #     print(vs-np.sort(vs))
     #     exit()
     grad_inv = params.length / (hs * params.res)
-    sin_thetas = 1 / ( 1 + grad_inv**2 )
+    sin_thetas = 1 / np.sqrt( 1 + grad_inv**2 )
     ts = ( vs[:-1]-vs[1:] ) / ( g * sin_thetas )
     return -np.sum(ts)
 
@@ -72,7 +72,7 @@ def mutate(sample): # 1d and 2d
     temp = sample.copy()
     temp[...,1:] -= sample[...,:-1]
     temp = sample + mutation
-    temp -= np.min(temp,axis=-1)[:,np.newaxis] - 0.01
+    temp -= np.min(temp,axis=-1)[:,np.newaxis] - 0.001 # no flat surface
     temp /= np.sum(temp, axis=-1)[:,np.newaxis] / params.height
     # try:
     #     assert np.all(temp>0)
@@ -135,9 +135,11 @@ def draw_slope(arr,img_id='slope'):
 
 # main simulation starts here
 pop = np.random.rand(params.population,params.res)
-pop /= np.sum(pop,axis=1)[:,np.newaxis]
+pop /= np.sum(pop,axis=-1)[:,np.newaxis]
 pop *= params.height
-pop = np.cumsum(pop,axis=1)
+pop = np.cumsum(pop,axis=-1)
+
+
 
 
 for gNo in range(params.max_gen + 1):
