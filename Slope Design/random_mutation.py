@@ -16,14 +16,14 @@ from skimage.draw import polygon
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--var',type=float,default=1e-3) # enter normalized value
-parser.add_argument('--population',type=int,default=1000)
-parser.add_argument('--max_gen',type=int,default=10000)
-parser.add_argument('--frequency',type=int,default=100)
-parser.add_argument('--survival_rate',type=int,default=0.1)
+parser.add_argument('--population',type=int,default=100)
+parser.add_argument('--max_gen',type=int,default=1000)
+parser.add_argument('--frequency',type=int,default=10)
+parser.add_argument('--survival_rate',type=int,default=0.5)
 parser.add_argument('--plot',type=int,default=0)
 
 #slope parameters
-parser.add_argument('--res',type=int,default=200)
+parser.add_argument('--res',type=int,default=1000)
 parser.add_argument('--height',type=float,default=1)
 parser.add_argument('--length',type=float,default=1)
 
@@ -39,16 +39,6 @@ params.var *= np.sqrt(params.height) # for unnormalizing purposes
 # for plotting purposes
 avg_fits = []
 best_fits = []
-
-
-def fitness(arr): # for a 1d array
-    assert np.isclose( arr[-1],params.height) # safety check
-    hs = arr[1:] - arr[:-1]
-    if np.any(hs<=0):
-        return -np.inf
-    grad_inv = params.length / (hs * params.res)
-    ts = np.sqrt(2*hs/g * (1+grad_inv**2))
-    return -np.sum(ts)
 
 
 def fitness(arr): # for a 1d array
@@ -91,7 +81,7 @@ def log_status(gNo,samples):
     best_fits.append(fittest_fitness)
 
     print('Generation {0}:'.format(gNo))
-    print('Average fitness:{0:.2f}\t Best fitness:{1:.2f}'.format(avg_fitness,fittest_fitness))
+    print('Average fitness:{0:.4f}\t Best fitness:{1:.4f}'.format(avg_fitness,fittest_fitness))
     draw_slope(fittest,img_id=gNo)
     return fittest_fitness
 
